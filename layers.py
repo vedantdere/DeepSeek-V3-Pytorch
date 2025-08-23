@@ -1,5 +1,12 @@
 import torch
 from torch import nn
+import torch.nn.functional as F
+import math
+from transformers.modeling_rope_utils import ROPE_INIT_FUNCTIONS
+from transformers.masking_utils import create_causal_mask, create_sliding_window_causal_mask
+from attn_implementation import eager_paged_attention_forward
+from transformers.modeling_outputs import BaseModelOutputWithPast
+
 
 class DeepseekV3RMSNorm(nn.Module):
     def __init__(self,
@@ -71,7 +78,7 @@ class DeepseekV3MLP(nn.Module):
         self.up_proj = nn.Linear(self.hidden_size, self.intermediate_size, bias=False)
         self.down_proj = nn.Linear(self.intermediate_size, self.hidden_size, bias=False)
 
-        self.act_fn = ACT2FN[config.hidden_act]
+        self.act_fn = nn.GELU(approximate='tanh')
 
     def forward(self,x):
         x = self.down_proj(self.act_fn(self.gate_proj(x) * self.up_proj(x)))
@@ -202,39 +209,6 @@ def apply_rotary_pos_emb(
     k_embed = (k * cos) + (rotate_half(k) * sin)
     return q_embed, k_embed
 
-def repeat_kv(hidden_states, n_rep):
-    batch, num_key_value_heads, slen, head_dim = hidden_states.shape
-    if n_rep == 1:
-        return hidden_states
-    hidden_states = hidden_states[:, :, None, :, :].expand(batch, num_key_value_heads, n_rep, slen, head_dim)
-    return hidden_states.reshape(batch, num_key_value_heads * n_rep, slen, head_dim)
-
-def eager_attention_forward(
-    module,
-    query,
-    key,
-    value,
-    attention_mask,
-    scaling,
-    dropout= 0.0,
-    **kwargs,
-):
-    key_states = repeat_kv(key, module.num_key_value_groups)
-    value_states = repeat_kv(value, module.num_key_value_groups)
-
-    attn_weights = torch.matmul(query, key_states.transpose(2, 3)) * scaling
-    if attention_mask is not None:
-        causal_mask = attention_mask[:, :, :, : key_states.shape[-2]]
-        attn_weights = attn_weights + causal_mask
-
-    attn_weights = nn.functional.softmax(attn_weights, dim=-1, dtype=torch.float32).to(query.dtype)
-    attn_weights = nn.functional.dropout(attn_weights, p=dropout, training=module.training)
-    attn_output = torch.matmul(attn_weights, value_states)
-    attn_output = attn_output.transpose(1, 2).contiguous()
-
-    return attn_output, attn_weights
-
-
 def apply_rotary_pos_emb_interleave(q,k,cos,sin,position_ids=None,unsqueeze_dim=1):
     cos = cos.unsqueeze(unsqueeze_dim)
     sin = sin.unsqueeze(unsqueeze_dim)
@@ -249,7 +223,7 @@ def apply_rotary_pos_emb_interleave(q,k,cos,sin,position_ids=None,unsqueeze_dim=
     k_embed = (k * cos) + (rotate_half(k) * sin)
     return q_embed, k_embed
 
-def get_yarn_mscale(scale=1,mscale=1):
+def yarn_get_mscale(scale=1,mscale=1):
     if scale <= 1:
         return 1.0
     return 0.1 * mscale * math.log(scale) * 1.0
@@ -356,9 +330,7 @@ class DeepseekV3Attention(nn.Module):
         if self.config._attn_implementation == "flash_attention_2" and self.qk_head_dim != self.v_head_dim:
             value_states = F.pad(value_states, [0,self.qk_head_dim-self.v_head_dim])
 
-        attention_inference = eager_attention_forward
-        if self.config._attn_implementation != "eager":
-            attention_inference = ALL_ATTENTION_FUNCTIONS[self.config._attn_implementation]
+        attention_inference = eager_paged_attention_forward
         
         attn_output, attn_weights = attention_inference(
             self,
