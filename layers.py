@@ -91,7 +91,7 @@ class DeepseekV3TopkRouter(nn.Module):
 
         self.config = config
         self.top_k = config.num_experts_per_tok
-        self.n_routed_experts = config.n_router_experts
+        self.n_routed_experts = config.n_routed_experts
         self.routed_scaling_factor = config.routed_scaling_factor
         self.n_group = config.n_group
         self.topk_group = config.topk_group
