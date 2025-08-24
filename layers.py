@@ -245,6 +245,7 @@ class DeepseekV3Attention(nn.Module):
         self.kv_lora_rank = config.kv_lora_rank
         self.v_head_dim = config.v_head_dim
         self.qk_nope_head_dim = config.qk_nope_head_dim
+        self.num_heads = config.num_attention_heads
         self.qk_head_dim = config.qk_head_dim
 
         self.is_causal = True
