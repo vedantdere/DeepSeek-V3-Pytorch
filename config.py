@@ -27,7 +27,7 @@ class DeepseekV3Config(PretrainedConfig):
                  topk_group=4,
                  num_experts_per_tok=8,
                  first_k_dense_replace=3,
-                 norm_tokp_prob=True,
+                 norm_topk_prob=True,
                  hidden_act='silu',
                  max_position_embeddings=4096,
                  initializer_range=0.02,
@@ -67,7 +67,7 @@ class DeepseekV3Config(PretrainedConfig):
         self.topk_group = topk_group
         self.num_experts_per_tok = num_experts_per_tok
         self.first_k_dense_replace = first_k_dense_replace
-        self.norm_top_prob = norm_tokp_prob
+        self.norm_top_prob = norm_topk_prob
         self.rope_interleave = rope_interleave
 
         if num_key_value_heads is None:
