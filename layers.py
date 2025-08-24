@@ -17,8 +17,8 @@ class DeepseekV3RMSNorm(nn.Module):
         self.weight = nn.Parameter(torch.ones(hidden_size))
         self.eps = eps
 
-    def forward(self,hidden_size):
-        input_dtype = hidden_size.dtype
+    def forward(self,hidden_states):
+        input_dtype = hidden_states.dtype
         hidden_states = hidden_states.to(torch.float32)
 
         variance = hidden_states.pow(2).mean(-1,keepdim=True)
