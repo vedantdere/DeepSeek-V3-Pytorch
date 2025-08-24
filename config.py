@@ -60,7 +60,7 @@ class DeepseekV3Config(PretrainedConfig):
         self.q_lora_rank = q_lora_rank
         self.qk_rope_head_dim = qk_nope_head_dim
         self.v_head_dim = v_head_dim
-        self.qk_nopre_head_dim = qk_nope_head_dim
+        self.qk_nope_head_dim = qk_nope_head_dim
         self.qk_head_dim = qk_nope_head_dim + qk_rope_head_dim
         self.head_dim = qk_rope_head_dim
         self.n_group = n_group
