@@ -67,7 +67,7 @@ class DeepseekV3Config(PretrainedConfig):
         self.topk_group = topk_group
         self.num_experts_per_tok = num_experts_per_tok
         self.first_k_dense_replace = first_k_dense_replace
-        self.norm_top_prob = norm_topk_prob
+        self.norm_topk_prob = norm_topk_prob
         self.rope_interleave = rope_interleave
 
         if num_key_value_heads is None:
