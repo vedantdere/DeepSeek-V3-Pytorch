@@ -236,7 +236,7 @@ class DeepseekV3Attention(nn.Module):
 
         self.config = config
         self.layer_ids = layer_ids
-        self.num_key_value_groups = config.num_attention_heads // self.num_key_value_heads
+        self.num_key_value_groups = config.num_attention_heads // config.num_key_value_heads
         self.attention_dropout = config.attention_dropout
         self.num_head = config.num_attention_heads
         self.rope_theta = config.rope_theta
