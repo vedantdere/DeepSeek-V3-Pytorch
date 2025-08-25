@@ -209,28 +209,28 @@ class DeepseekV3ConfigTiny(PretrainedConfig):
 
     def __init__(
                  self,
-                 vocab_size=1000,
-                 hidden_size=256,                 # small hidden size
-                 intermediate_size=1024,          # 4x hidden size
-                 moe_intermediate_size=512,
-                 num_hidden_layers=4,             # very few layers
-                 num_attention_heads=8,           # small number of heads
-                 num_key_value_heads=8,
+                 vocab_size=129280//16,
+                 hidden_size=7168//16,
+                 intermediate_size=18432//16,
+                 moe_intermediate_size=2048//16,
+                 num_hidden_layers=6,
+                 num_attention_heads=128//16,
+                 num_key_value_heads=128//16,
                  n_routed_experts=1,
-                 n_shared_experts=16,
+                 n_shared_experts=256//16,
                  routed_scaling_factor=2.5,
-                 kn_lora_rank=64,
-                 q_lora_rank=128,
-                 qk_rope_head_dim=8,              # 24 = 16+8 (per head dim)
-                 qk_nope_head_dim=24,
-                 v_head_dim=32,
-                 n_group=2,
-                 topk_group=2,
-                 num_experts_per_tok=4,
-                 first_k_dense_replace=2,
+                 kn_lora_rank=512//16,
+                 q_lora_rank=1536//16,
+                 qk_rope_head_dim=64//16,
+                 v_head_dim=128//16,
+                 qk_nope_head_dim=128//16,
+                 n_group=8,
+                 topk_group=4,
+                 num_experts_per_tok=8,
+                 first_k_dense_replace=3,
                  norm_topk_prob=True,
                  hidden_act='silu',
-                 max_position_embeddings=512,
+                 max_position_embeddings=4096,
                  initializer_range=0.02,
                  rms_norm_eps=1e-6,
                  use_cache=True,
@@ -259,11 +259,11 @@ class DeepseekV3ConfigTiny(PretrainedConfig):
         self.kv_lora_rank = kn_lora_rank
 
         self.q_lora_rank = q_lora_rank
-        self.qk_rope_head_dim = qk_rope_head_dim
-        self.qk_nope_head_dim = qk_nope_head_dim
-        self.qk_head_dim = qk_nope_head_dim + qk_rope_head_dim  # = 24
+        self.qk_rope_head_dim = qk_nope_head_dim
         self.v_head_dim = v_head_dim
-        self.head_dim = self.qk_head_dim
+        self.qk_nope_head_dim = qk_nope_head_dim
+        self.qk_head_dim = qk_nope_head_dim + qk_rope_head_dim
+        self.head_dim = qk_rope_head_dim
         self.n_group = n_group
         self.topk_group = topk_group
         self.num_experts_per_tok = num_experts_per_tok
