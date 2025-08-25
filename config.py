@@ -222,8 +222,8 @@ class DeepseekV3ConfigTiny(PretrainedConfig):
                  kn_lora_rank=64,
                  q_lora_rank=128,
                  qk_rope_head_dim=8,              # 24 = 16+8 (per head dim)
-                 qk_nope_head_dim=16,
-                 v_head_dim=24,
+                 qk_nope_head_dim=24,
+                 v_head_dim=32,
                  n_group=2,
                  topk_group=2,
                  num_experts_per_tok=4,
