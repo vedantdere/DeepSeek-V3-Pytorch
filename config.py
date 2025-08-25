@@ -110,7 +110,7 @@ class DeepseekV3ConfigSmall(PretrainedConfig):
     def __init__(
                  self,
                  vocab_size=1000,
-                 hidden_size=896,
+                 hidden_size=192*2,
                  intermediate_size=18432,
                  moe_intermediate_size=2048,
                  num_hidden_layers=6,
