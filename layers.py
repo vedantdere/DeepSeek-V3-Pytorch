@@ -352,7 +352,7 @@ class DeepseekV3Attention(nn.Module):
         return attn_output, attn_weights
     
 
-class DeepseekV3DecoderLayer(nn.Module):
+class Deepseekv3DecoderLayer(nn.Module):
     def __init__(self,
                  config,
                  layer_idx):
