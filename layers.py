@@ -352,14 +352,13 @@ class DeepseekV3Attention(nn.Module):
         return attn_output, attn_weights
     
 
-class Deepseekv3DecoderLayer(nn.Module):
+class DeepseekV3DecoderLayer(nn.Module):
     def __init__(self,
                  config,
                  layer_idx):
         super().__init__()
 
         self.hidden_size = config.hidden_size
-        
         self.self_attn = DeepseekV3Attention(config=config, layer_ids=layer_idx)
 
         if layer_idx >= config.first_k_dense_replace:
@@ -367,42 +366,46 @@ class Deepseekv3DecoderLayer(nn.Module):
         else:
             self.mlp = DeepseekV3MLP(config)
 
-        self.input_layernorm = DeepseekV3RMSNorm(config.hidden_size, eps=config.rms_norm_eps)
+        self.input_layernorm = DeepseekV3RMSNorm(config.hidden_size,eps=config.rms_norm_eps)
         self.post_attention_layernorm = DeepseekV3RMSNorm(config.hidden_size, eps=config.rms_norm_eps)
-
 
     def forward(self,
                 hidden_states,
-                attention_mask,
-                position_ids,
-                past_key_values,
-                use_cache,
-                cahce_position,
-                position_embeddings,
-                **kwargs):
+                attention_mask=None,
+                position_ids=None,
+                past_key_values=None,
+                use_cache=False,
+                cache_position=None,
+                position_embeddings=None,
+                **kwargs
+                ):
         
         residual = hidden_states
+
         hidden_states = self.input_layernorm(hidden_states)
 
         hidden_states, _ = self.self_attn(
-            hidden_states,
-            attnetion_mask=attention_mask,
+            hidden_states=hidden_states,
+            attention_mask=attention_mask,
             position_ids=position_ids,
             past_key_values=past_key_values,
             use_cache=use_cache,
-            cahce_position=cahce_position,
-            position_embeddings=position_embeddings
+            cache_position=cache_position,
+            position_embeddings=position_embeddings,
+            **kwargs
         )
 
-        hidden_states = residual + hidden_states
-
-        residual  = hidden_states
+        hidden_states = hidden_states + residual
+        
+        residual = hidden_states
         hidden_states = self.post_attention_layernorm(hidden_states)
-
         hidden_states = self.mlp(hidden_states)
-        hidden_states = residual + hidden_states
+        
+        hidden_states = hidden_states + residual
         return hidden_states
     
+
+
 
 class DeepseekV3Model(nn.Module):
     def __init__(self,
