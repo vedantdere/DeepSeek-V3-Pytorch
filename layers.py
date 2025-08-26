@@ -190,9 +190,9 @@ class DeepseekV3MoE(nn.Module):
         return x
     
 def rotate_half(x):
-    x1 = x[...:x.shape[-1]//2]
-    x2 = x[...,x.shape//2:]
-    return torch.cat((-x2,x1),dim=1)
+    x1 = x[..., : x.shape[-1] // 2]
+    x2 = x[..., x.shape[-1] // 2 :]
+    return torch.cat((-x2, x1), dim=-1)
 
 def apply_rotary_pos_emb(
         q,
@@ -229,10 +229,10 @@ def yarn_get_mscale(scale=1,mscale=1):
     return 0.1 * mscale * math.log(scale) * 1.0
 
 class DeepseekV3Attention(nn.Module):
-    def __init__(self, config, layer_idx):
+    def __init__(self, config, layer_ids):
         super().__init__()
         self.config = config
-        self.layer_idx = layer_idx
+        self.layer_idx = layer_ids
         self.num_key_value_groups = config.num_attention_heads // config.num_key_value_heads
         self.attention_dropout = config.attention_dropout
         self.num_heads = config.num_attention_heads
@@ -325,7 +325,7 @@ class DeepseekV3Attention(nn.Module):
             value_states = F.pad(value_states, [0, self.qk_head_dim - self.v_head_dim])
 
 
-            attention_interface = eager_paged_attention_forward
+        attention_interface = eager_paged_attention_forward
 
         attn_output, attn_weights = attention_interface(
             self,
@@ -472,7 +472,7 @@ class DeepseekV3Model(nn.Module):
         hidden_states = self.norm(hidden_states)
 
         return BaseModelOutputWithPast(
-            last_hidden_states=hidden_states,
+            last_hidden_state=hidden_states,
             past_key_values=past_key_values
         )
     
@@ -516,7 +516,7 @@ class DeepseekV3ForCausalLM(nn.Module):
             **kwargs
         )
 
-        hidden_states = outputs.last_hidden_states
+        hidden_states = outputs.last_hidden_state
 
         slice_indices = slice(-logits_to_keep, None) if isinstance(logits_to_keep, int) else logits_to_keep
 
