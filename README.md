@@ -1,6 +1,6 @@
 # 🚀 DeepSeek-V3.1 – Pure PyTorch Reimplementation
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1E1X_CRyFvpdU4rSSk-BoYB9jkIfp4zDK?usp=sharing)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1bEl4FF2JW2TKLj_yXlWc5FO0P7fZtN9H?usp=sharing)
 
 
 <p align="center">
